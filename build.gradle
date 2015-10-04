@@ -1,0 +1,100 @@
+group 'home'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+mainClassName = 'home.undertow.capsule.Starter'
+
+configurations{
+    capsule
+    provided
+    quasar
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+    test {
+        compileClasspath += configurations.provided
+        runtimeClasspath += configurations.provided
+    }
+}
+
+dependencies {
+    compile "io.undertow:undertow-servlet:1.2.11.Final"
+    compile ("io.undertow:undertow-core:1.2.11.Final"){
+        exclude module: "jboss-logging"
+    }
+    compile "org.springframework.boot:spring-boot-starter:1.2.6.RELEASE"
+    compile ("org.springframework.boot:spring-boot-starter-web:1.2.6.RELEASE"){
+        exclude module: "spring-boot-starter-tomcat"
+    }
+    compile "org.springframework.boot:spring-boot-starter-thymeleaf:1.2.6.RELEASE"
+    compile "org.springframework.boot:spring-boot-starter-data-rest:1.2.6.RELEASE"
+    compile ("org.springframework.boot:spring-boot-starter-data-jpa:1.2.6.RELEASE"){
+        exclude group: "org.hibernate"
+    }
+    compile "org.hibernate:hibernate-core:5.0.1.Final"
+    compile "org.hibernate:hibernate-entitymanager:5.0.1.Final"
+    compile "org.mongodb:mongodb-driver-async:3.0.2"
+    compile "mysql:mysql-connector-java:5.1.36"
+    compile "org.infinispan:infinispan-spring4:8.0.1.Final"
+    compile "org.infinispan:infinispan-cachestore-jpa:8.0.1.Final"
+    compile ("org.hibernate:hibernate-infinispan:5.0.1.Final"){
+        exclude module: "infinispan-core"
+    }
+    compile "org.projectlombok:lombok:1.16.4"
+    compile "co.paralleluniverse:quasar-core:0.7.3:jdk8"
+    compile "co.paralleluniverse:quasar-actors:0.7.3"
+    compile "org.glassfish.jersey.core:jersey-client:2.22"
+    quasar "co.paralleluniverse:quasar-core:0.7.3:jdk8"
+    capsule "co.paralleluniverse:capsule:1.0"
+    testCompile 'junit:junit:4.11'
+}
+
+run {
+    jvmArgs "-javaagent:${configurations.quasar.iterator().next()}"
+}
+
+task capsule(type: Jar, dependsOn: classes) {
+    archiveName = "undertow-quasar-capsule.jar"
+    from jar // embed our application jar
+    from { configurations.runtime } // embed dependencies
+
+    from(configurations.capsule.collect { zipTree(it) }) { include 'Capsule.class' } // we just need the single Capsule class
+
+    manifest {
+        attributes(
+                'Premain-Class'  :   'Capsule',
+                'Main-Class'  :   'Capsule',
+                'Application-Class'   : mainClassName,
+                'Extract-Capsule' : 'false', // no need to extract the capsule
+                'Min-Java-Version' : '1.8.0',
+                'JVM-Args' : run.jvmArgs.join(' '),
+                'Java-Agents' : getDependencies(configurations.quasar).iterator().next(),
+                'System-Properties' : run.systemProperties.collect { k,v -> "$k=$v" }.join(' '),
+                'Dependencies': getDependencies(configurations.runtime).join(' ')
+        )
+    }
+}
+
+// converts Gradle dependencies to Capsule dependencies
+def getDependencies(config) {
+    return config.getAllDependencies().collect {
+        def res = it.group + ':' + it.name + ':' + it.version +
+                (!it.artifacts.isEmpty() ? ':' + it.artifacts.iterator().next().classifier : '')
+        if(!it.excludeRules.isEmpty()) {
+            res += "(" + it.excludeRules.collect { it.group + ':' + it.module }.join(',') + ")"
+        }
+        return res
+    }
+}
