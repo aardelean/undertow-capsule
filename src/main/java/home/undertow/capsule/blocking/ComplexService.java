@@ -43,10 +43,12 @@ public class ComplexService {
 
     @RequestMapping("/check")
     public String complexShit() throws Exception {
+        CompletableFuture<Person> personFuture = person();
         Employee employee = employee();
-        Person person = person();
+
         response();
         calculate();
+        Person person = personFuture.get();
         return "ok!";
     }
 
@@ -70,7 +72,7 @@ public class ComplexService {
         }
     }
 //    @Suspendable
-    private Person person() throws ExecutionException, InterruptedException {
+    private  CompletableFuture<Person> person() throws ExecutionException, InterruptedException {
         CompletableFuture<Person> futureResult = new CompletableFuture<>();
         MongoCollection<Document> collection = mongoDatabase.getCollection("Person");
         collection.find().filter(Filters.eq("_id", id)).first((p, throwable) -> {
@@ -80,7 +82,7 @@ public class ComplexService {
                 e.printStackTrace();
             }
         });
-        return futureResult.get();
+        return futureResult;
     }
 
 }
