@@ -1,6 +1,5 @@
 package home.undertow.capsule.blocking;
 
-import co.paralleluniverse.fibers.Suspendable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
@@ -51,26 +50,26 @@ public class ComplexService {
         return "ok!";
     }
 
-    @Suspendable
+//    @Suspendable
     public Employee employee(){
         return employeeDao.findOne(1l);
     }
 
 
 
-    @Suspendable
+//    @Suspendable
     public void response() throws UnsupportedEncodingException {
         restClient.targetWithParams(externalUrl).request().get();
     }
 
-    @Suspendable
+//    @Suspendable
     public void calculate(){
         double[] resultVal = new double[100_000];
         for(int i=0; i<100_000;i++){
             resultVal[i] = Math.sqrt(i*i+123.4);
         }
     }
-    @Suspendable
+//    @Suspendable
     private Person person() throws ExecutionException, InterruptedException {
         CompletableFuture<Person> futureResult = new CompletableFuture<>();
         MongoCollection<Document> collection = mongoDatabase.getCollection("Person");
