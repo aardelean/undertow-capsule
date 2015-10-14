@@ -1,6 +1,7 @@
 package home.undertow.capsule.blocking;
 
 import co.paralleluniverse.fibers.Suspendable;
+import co.paralleluniverse.strands.Strand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.async.client.MongoCollection;
 import com.mongodb.async.client.MongoDatabase;
@@ -44,11 +45,15 @@ public class ComplexService {
 
     @RequestMapping("/check")
     public String complexShit() throws Exception {
+        CompletableFuture<Person> futurePerson = person();
         Employee employee = employee();
-        Person person = person();
-        response();
-        calculate();
-        return "ok!";
+
+        String response = response();
+        double calculated = calculate();
+        return objectMapper.writeValueAsString(employee)
+                + response
+                + calculated
+                + objectMapper.writeValueAsString(futurePerson.get());
     }
 
     @Suspendable
@@ -56,22 +61,20 @@ public class ComplexService {
         return employeeDao.findOne(1l);
     }
 
-
-
     @Suspendable
-    public void response() throws UnsupportedEncodingException {
-        restClient.targetWithParams(externalUrl).request().get();
+    public String response() throws UnsupportedEncodingException {
+        System.out.println(Strand.currentStrand().getId());
+        return restClient.targetWithParams(externalUrl).request().get(String.class);
     }
 
-    @Suspendable
-    public void calculate(){
+    public double calculate(){
         double[] resultVal = new double[100_000];
         for(int i=0; i<100_000;i++){
             resultVal[i] = Math.sqrt(i*i+123.4);
         }
+        return resultVal[75_000];
     }
-    @Suspendable
-    private Person person() throws ExecutionException, InterruptedException {
+    private CompletableFuture<Person> person() throws ExecutionException, InterruptedException {
         CompletableFuture<Person> futureResult = new CompletableFuture<>();
         MongoCollection<Document> collection = mongoDatabase.getCollection("Person");
         collection.find().filter(Filters.eq("_id", id)).first((p, throwable) -> {
@@ -81,7 +84,7 @@ public class ComplexService {
                 e.printStackTrace();
             }
         });
-        return futureResult.get();
+        return futureResult;
     }
 
 }
