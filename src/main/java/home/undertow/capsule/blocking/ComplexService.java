@@ -46,32 +46,31 @@ public class ComplexService {
         CompletableFuture<Person> personFuture = person();
         Employee employee = employee();
 
-        response();
-        calculate();
-        Person person = personFuture.get();
-        return "ok!";
+        String response = response();
+        double calculate = calculate();
+        return objectMapper.writeValueAsString(employee)
+                + response
+                + calculate
+                + objectMapper.writeValueAsString(personFuture.get());
     }
 
-//    @Suspendable
     public Employee employee(){
         return employeeDao.findOne(1l);
     }
 
 
 
-//    @Suspendable
-    public void response() throws UnsupportedEncodingException {
-        restClient.targetWithParams(externalUrl).request().get();
+    public String response() throws UnsupportedEncodingException {
+        return restClient.targetWithParams(externalUrl).request().get(String.class);
     }
 
-//    @Suspendable
-    public void calculate(){
+    public double calculate(){
         double[] resultVal = new double[100_000];
         for(int i=0; i<100_000;i++){
             resultVal[i] = Math.sqrt(i*i+123.4);
         }
+        return resultVal[75_000];
     }
-//    @Suspendable
     private  CompletableFuture<Person> person() throws ExecutionException, InterruptedException {
         CompletableFuture<Person> futureResult = new CompletableFuture<>();
         MongoCollection<Document> collection = mongoDatabase.getCollection("Person");
