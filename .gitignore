@@ -4,6 +4,7 @@
 .settings/
 bin/
 target/
+node_modules
 *.iml
 *.ipr
 *.iws

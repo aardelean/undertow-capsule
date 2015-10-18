@@ -18,7 +18,7 @@ import org.springframework.web.WebApplicationInitializer;
 @ComponentScan("home.undertow.capsule")
 @PropertySource("classpath:application.properties")
 @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@Import({PersistenceJPAConfig.class, CacheConfiguration.class, RestConfiguration.class,MongoConfiguration.class})
+@Import({PersistenceJPAConfig.class, CacheConfiguration.class, RestConfiguration.class})
 public class Starter extends SpringBootServletInitializer implements WebApplicationInitializer {
 
     @Override
