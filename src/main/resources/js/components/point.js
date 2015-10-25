@@ -1,23 +1,24 @@
 import React, {PropTypes, Component} from 'react';
 import shouldPureComponentUpdate from 'react-pure-render/function';
 
-import {greatPlaceStyle} from './my_great_place_styles.js';
+import {pointStyle} from './point_styles.js';
 
-export default class MyGreatPlace extends Component {
+class Point extends Component {
   constructor(props) {
     super(props);
-    this.propTypes = {
-             text: PropTypes.string
-           };
-    this.defaultProps = {};
     this.shouldComponentUpdate = shouldPureComponentUpdate;
   }
 
   render() {
     return (
-       <div style={greatPlaceStyle}>
+       <div style={pointStyle}>
           {this.props.text}
        </div>
     );
   }
 }
+Point.propTypes= {
+   text: PropTypes.string
+ };
+Point.defaultProps={};
+export default Point;

@@ -38,6 +38,12 @@ var bundler = {
   }
 };
 
+gulp.task('watch', ['scripts'], function () {
+  gulp.watch([
+    "./src/main/resources/**/*.js"
+  ], ['scripts']);
+});
+
 
 gulp.task('scripts', function () {
   bundler.init();
